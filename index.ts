@@ -1,4 +1,6 @@
-import { resolve } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import {
 	type ExtensionAPI,
 	type ExtensionContext,
@@ -17,18 +19,40 @@ import {
 
 const EXT_ID = "nitpick";
 const CUSTOM_TYPE = "nitpick-review";
-const STATE_ENTRY = "nitpick-state";
-const DEFAULT_MODEL = "claude-haiku-4-5";
+const CONFIG_PATH = join(homedir(), ".pi", "agent", "nitpick.json");
 
-interface NitpickState {
-	enabled: boolean;
-	model: string;
+// ---- Global persistent config ---------------------------------------------
+interface NitpickConfig {
+	enabled?: boolean;
+	model?: string;
+}
+
+function loadConfig(): NitpickConfig {
+	try {
+		const raw = readFileSync(CONFIG_PATH, "utf8");
+		const parsed = JSON.parse(raw);
+		if (typeof parsed === "object" && parsed !== null)
+			return parsed as NitpickConfig;
+	} catch {
+		// File missing or unreadable — fine, use defaults.
+	}
+	return {};
+}
+
+function saveConfig(config: NitpickConfig): void {
+	try {
+		mkdirSync(dirname(CONFIG_PATH), { recursive: true });
+		writeFileSync(CONFIG_PATH, JSON.stringify(config, null, 2));
+	} catch {
+		// Best-effort; persistence is ergonomic, not load-bearing.
+	}
 }
 
 export default function (pi: ExtensionAPI) {
-	// ---- Session-scoped state ----------------------------------------------
-	let enabled = true;
-	let model = DEFAULT_MODEL;
+	// ---- Load global config ------------------------------------------------
+	const config = loadConfig();
+	let enabled = config.enabled ?? false;
+	let model = config.model ?? "";
 
 	/**
 	 * True while the turn that nitpick itself triggered (via a follow-up
@@ -59,19 +83,7 @@ export default function (pi: ExtensionAPI) {
 
 	// ---- Persistence --------------------------------------------------------
 	function persist(): void {
-		pi.appendEntry(STATE_ENTRY, { enabled, model } satisfies NitpickState);
-	}
-
-	function hydrate(ctx: ExtensionContext): void {
-		let latest: NitpickState | undefined;
-		for (const entry of ctx.sessionManager.getEntries()) {
-			if (entry.type === "custom" && entry.customType === STATE_ENTRY) {
-				latest = entry.data as NitpickState;
-			}
-		}
-		if (!latest) return;
-		enabled = Boolean(latest.enabled);
-		model = latest.model || DEFAULT_MODEL;
+		saveConfig({ enabled, model: model || undefined });
 	}
 
 	// ---- UI helpers ---------------------------------------------------------
@@ -212,10 +224,15 @@ export default function (pi: ExtensionAPI) {
 
 	// ---- Lifecycle events ---------------------------------------------------
 	pi.on("session_start", (_event, ctx) => {
-		hydrate(ctx);
 		refreshStatus(ctx);
-		if (enabled && ctx.hasUI) {
+		if (enabled && model) {
 			ctx.ui.notify(`nitpick active (${model})`, "info");
+		} else if (enabled && !model) {
+			enabled = false;
+			ctx.ui.notify(
+				"nitpick: no model configured. Run /nitpick model <provider/model> to set one.",
+				"warning",
+			);
 		}
 	});
 
@@ -298,6 +315,13 @@ export default function (pi: ExtensionAPI) {
 					return;
 				}
 				case "on": {
+					if (!model) {
+						ctx.ui.notify(
+							"nitpick: set a model first with /nitpick model <provider/model>",
+							"warning",
+						);
+						return;
+					}
 					enabled = true;
 					persist();
 					refreshStatus(ctx);
@@ -329,10 +353,11 @@ export default function (pi: ExtensionAPI) {
 				case "model": {
 					const next = rest.join(" ").trim();
 					if (!next) {
-						ctx.ui.notify(`nitpick model: ${model}`, "info");
+						ctx.ui.notify(`nitpick model: ${model || "(not set)"}`, "info");
 						return;
 					}
 					model = next;
+					if (!enabled) enabled = true;
 					persist();
 					// Existing client was spawned with the old model; tear it down
 					// so the next review lazily starts one with the new model.
@@ -366,9 +391,9 @@ export default function (pi: ExtensionAPI) {
 	// ---- CLI flag -----------------------------------------------------------
 	pi.registerFlag("nitpick", {
 		description:
-			"Control the nitpick simplification reviewer (default: on). Pass --nitpick=false to disable.",
+			"Control the nitpick simplification reviewer. Pass --nitpick=false to disable.",
 		type: "boolean",
-		default: true,
+		default: undefined,
 	});
 
 	// Check the flag during session_start, once the runner is up.
@@ -378,11 +403,9 @@ export default function (pi: ExtensionAPI) {
 			enabled = false;
 			void reviewer?.stop();
 			reviewer = null;
-			persist();
 			refreshStatus(ctx);
-		} else if (flag === true) {
+		} else if (flag === true && model) {
 			enabled = true;
-			persist();
 			refreshStatus(ctx);
 		}
 	});

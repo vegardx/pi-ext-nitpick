@@ -61,10 +61,19 @@ that behavior from N independent single-shot subagents.
 
 ## Activation
 
-On by default. Disable per-session with either:
+Off by default. First-time setup:
+
+```
+/nitpick model anthropic/claude-haiku-4-5
+```
+
+This persists the model choice and enables nitpick in `~/.pi/agent/nitpick.json`.
+All future pi sessions will pick it up automatically — no need to repeat.
+
+Disable per-session with:
 
 ```bash
-pi --nitpick=false          # CLI flag
+pi --nitpick=false
 ```
 
 or from inside pi:
@@ -72,9 +81,6 @@ or from inside pi:
 ```
 /nitpick off
 ```
-
-State (enabled flag, model) persists for the session via `pi.appendEntry`,
-so `/reload` is safe. Per-turn findings are ephemeral.
 
 ## Commands
 
@@ -89,20 +95,18 @@ so `/reload` is safe. Per-turn findings are ephemeral.
 
 ## Model selection
 
-The default (`claude-haiku-4-5`) resolves against the **Anthropic** provider.
-If you use a custom provider (e.g. OpenRouter, Azure, a local endpoint),
-the bare model id may not match your credentials and the reviewer will fail
-to start with "No API key found". Use the `provider/model` form:
+Nitpick requires a model to be configured before it will activate.
+Use the `provider/model` form that matches your setup:
 
 ```
+/nitpick model anthropic/claude-haiku-4-5
 /nitpick model openrouter/anthropic/claude-haiku-4.5
 /nitpick model azure/gpt-4o-mini
 /nitpick model my-provider/my-model
 ```
 
-The model choice persists for the session. To change the default permanently,
-add a `--nitpick-model` flag to your pi launch command or set it in an
-init extension (see [Using a local model](#using-a-local-model) below).
+Setting a model automatically enables nitpick. The choice is saved to
+`~/.pi/agent/nitpick.json` and applies to all future sessions.
 
 Start failures surface as TUI warnings and are also visible via
 `/nitpick status` (as `lastError`).
