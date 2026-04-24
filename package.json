@@ -1,12 +1,15 @@
 {
-	"name": "pi-ext-nitpick",
-	"version": "0.1.0",
+	"name": "@vegardx/pi-ext-nitpick",
+	"version": "0.0.0-development",
 	"description": "pi.dev extension: long-lived reviewer subagent that watches every edit and feeds simplification opportunities back to the main agent",
 	"keywords": ["pi-package", "pi-extension", "code-review", "simplify"],
 	"license": "MIT",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/vegardx/pi-ext-nitpick.git"
+	},
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com/"
 	},
 	"type": "module",
 	"engines": {
@@ -23,6 +26,11 @@
 		"@biomejs/biome": "^2.4.13",
 		"@mariozechner/pi-coding-agent": "^0.68.1",
 		"@sinclair/typebox": "^0.34.49",
+		"semantic-release": "^25.0.1",
+		"@semantic-release/commit-analyzer": "^13.0.1",
+		"@semantic-release/release-notes-generator": "^14.0.3",
+		"@semantic-release/npm": "^13.1.5",
+		"@semantic-release/github": "^11.0.3",
 		"typescript": "^6.0.3",
 		"vitest": "^3.2.4"
 	},
