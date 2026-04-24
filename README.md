@@ -90,16 +90,19 @@ so `/reload` is safe. Per-turn findings are ephemeral.
 ## Model selection
 
 The default (`claude-haiku-4-5`) resolves against the **Anthropic** provider.
-If you use pi through a gateway (e.g. OAuth against `radicalai`, Vercel AI
-Gateway, OpenRouter), the bare id won't find your credentials and the
-reviewer will fail to start with "No API key found". Use the `provider/id`
-form of whatever haiku-class model your gateway exposes:
+If you use a custom provider (e.g. OpenRouter, Azure, a local endpoint),
+the bare model id may not match your credentials and the reviewer will fail
+to start with "No API key found". Use the `provider/model` form:
 
 ```
-/nitpick model radicalai/claude-haiku-4-5-20251001
-/nitpick model radicalai/eu-haiku-4-5
 /nitpick model openrouter/anthropic/claude-haiku-4.5
+/nitpick model azure/gpt-4o-mini
+/nitpick model my-provider/my-model
 ```
+
+The model choice persists for the session. To change the default permanently,
+add a `--nitpick-model` flag to your pi launch command or set it in an
+init extension (see [Using a local model](#using-a-local-model) below).
 
 Start failures surface as TUI warnings and are also visible via
 `/nitpick status` (as `lastError`).
