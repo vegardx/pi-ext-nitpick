@@ -89,7 +89,7 @@ or from inside pi:
 | `/nitpick` or `/nitpick status` | Show enabled state, model, whether the reviewer process is warm, active review count, and the last error (if any). |
 | `/nitpick on` | Enable. |
 | `/nitpick off` | Disable, stop the reviewer process, drop any pending findings. |
-| `/nitpick model <id>` | Change reviewer model (default `claude-haiku-4-5`). Tears down the current reviewer process so the next edit spawns a new one with the new model. |
+| `/nitpick model <id>` | Set the reviewer model. Tears down the current reviewer process so the next edit spawns a new one with the new model. Auto-enables nitpick. |
 | `/nitpick show` | Print the reviewer's current findings (or the last error if the reviewer failed). |
 | `/nitpick clear` | Drop findings and reset the reviewer's conversation (keeps the process warm). |
 
