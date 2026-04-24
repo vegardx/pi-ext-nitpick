@@ -1,5 +1,10 @@
 # pi-ext-nitpick
 
+[![CI](https://img.shields.io/github/actions/workflow/status/vegardx/pi-ext-nitpick/ci.yml?branch=main&label=CI)](https://github.com/vegardx/pi-ext-nitpick/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/vegardx/pi-ext-nitpick)](https://github.com/vegardx/pi-ext-nitpick/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/vegardx/pi-ext-nitpick)](LICENSE)
+[![pi.dev extension](https://img.shields.io/badge/pi.dev-extension-blue)](https://pi.dev)
+
 A pi.dev extension that runs a **long-lived reviewer subagent** alongside your
 main coding agent. The reviewer sees every `edit`/`write` as it happens,
 keeps a running list of simplification opportunities across the whole turn,
