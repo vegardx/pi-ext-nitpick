@@ -25,6 +25,7 @@ const EXCLUDED_DIR_SEGMENTS: ReadonlySet<string> = new Set([
 	"venv",
 	".mypy_cache",
 	".pytest_cache",
+	".tox",
 ]);
 
 /** Filenames we never review. */
