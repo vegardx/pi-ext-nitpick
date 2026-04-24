@@ -13,6 +13,12 @@ summary.
 pi install git:github.com/vegardx/pi-ext-nitpick
 ```
 
+Or from GitHub Packages:
+
+```bash
+npm install @vegardx/pi-ext-nitpick
+```
+
 ## Architecture
 
 There is one background reviewer per session, spawned lazily on the first
